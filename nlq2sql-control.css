@@ -1,3 +1,8 @@
+body {
+  background-color: black;
+}
+
+
 .nlq2sql-main-div{
   width: fit-content;
   height: fit-content;
@@ -43,7 +48,7 @@
 
   .nlq2sql_result_div{
     width: 1000px;
-    height: 700px;
+    height: 750px;
     background-color:white;
     position: absolute;
     top: 50%;
