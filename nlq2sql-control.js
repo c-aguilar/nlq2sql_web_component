@@ -20,7 +20,7 @@ class MicrofonoButton extends HTMLElement {
         );
         return;
       }
-
+      
       recordButton.disabled = true;
       recordButton.classList.add("nlq2sql_pulse");
 
@@ -106,16 +106,28 @@ async function getTranscription() {
   //   resolve("Testing");
   // });
 
+  if(config.DEBUG_MODE) console.log("Entro a Transcripcion");
+  
   var sdk = window.SpeechSDK;
+
+  if(config.DEBUG_MODE) console.log("Sdk:");
+  if(config.DEBUG_MODE) console.log(sdk);
+  
   var speechConfig = sdk.SpeechConfig.fromSubscription(
     config.SPEECH_KEY,
     config.SPEECH_REGION
   );
   speechConfig.speechRecognitionLanguage = config.SPEECH_LANGUAGE;
 
+  if(config.DEBUG_MODE) console.log("Speech config:");
+  if(config.DEBUG_MODE) console.log(speechConfig);
+
+  if(config.DEBUG_MODE) console.log("Obteniendo audio de microfono.");
   var audioConfig = sdk.AudioConfig.fromDefaultMicrophoneInput();
+  if(config.DEBUG_MODE) console.log("Llamando a recognizer.");
   var recognizer = new sdk.SpeechRecognizer(speechConfig, audioConfig);
 
+  if(config.DEBUG_MODE) console.log("Devolviendo promesa.");
   return new Promise(async (resolve, reject) => {
     await recognizer.recognizeOnceAsync(
       async function (result) {
