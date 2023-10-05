@@ -136,6 +136,7 @@ async function getTranscription() {
         resolve(result.text);
       },
       function (error) {
+        if(config.DEBUG_MODE) console.log(error);
         recognizer.close();
         recognizer = undefined;
         reject("No fue posible obtener la transcripción.");
