@@ -25,6 +25,8 @@ class MicrofonoButton extends HTMLElement {
       recordButton.classList.add("nlq2sql_pulse");
 
       var transcription = await getTranscription();
+      console.info("Transcripcion:")
+      console.log(transcription);
 
       recordButton.classList.remove("nlq2sql_pulse");
       recordButton.hidden = true;
@@ -59,8 +61,10 @@ class MicrofonoButton extends HTMLElement {
       });
 
       const apiResponse = await bridgeAPIResponse.json();
-      console.log(apiResponse);
+      
       //const apiResponse = chart_multiserieline;
+      console.info("API response:")
+      console.log(apiResponse);
 
       const queryH2 = document.createElement("h3");
       queryH2.className = "nlq2sql_title_h2";
@@ -83,7 +87,9 @@ class MicrofonoButton extends HTMLElement {
               apiResponse.queryExecution.formats
             )
           );
-        else divChart.appendChild(errorExecutionNode());
+        else {
+          divChart.appendChild(errorExecutionNode());
+        } 
       } else {
         queryH2.innerHTML = "Error al obtener la consulta.";
         divChart.appendChild(queryH2);
@@ -102,16 +108,7 @@ class MicrofonoButton extends HTMLElement {
 }
 
 async function getTranscription() {
-  // return new Promise(async (resolve, reject) => {
-  //   resolve("Testing");
-  // });
-
-  if(config.DEBUG_MODE) console.log("Entro a Transcripcion");
-  
   var sdk = window.SpeechSDK;
-
-  if(config.DEBUG_MODE) console.log("Sdk:");
-  if(config.DEBUG_MODE) console.log(sdk);
   
   var speechConfig = sdk.SpeechConfig.fromSubscription(
     config.SPEECH_KEY,
@@ -119,15 +116,10 @@ async function getTranscription() {
   );
   speechConfig.speechRecognitionLanguage = config.SPEECH_LANGUAGE;
 
-  if(config.DEBUG_MODE) console.log("Speech config:");
-  if(config.DEBUG_MODE) console.log(speechConfig);
-
-  if(config.DEBUG_MODE) console.log("Obteniendo audio de microfono.");
   var audioConfig = sdk.AudioConfig.fromDefaultMicrophoneInput();
-  if(config.DEBUG_MODE) console.log("Llamando a recognizer.");
+
   var recognizer = new sdk.SpeechRecognizer(speechConfig, audioConfig);
 
-  if(config.DEBUG_MODE) console.log("Devolviendo promesa.");
   return new Promise(async (resolve, reject) => {
     await recognizer.recognizeOnceAsync(
       async function (result) {
@@ -136,7 +128,7 @@ async function getTranscription() {
         resolve(result.text);
       },
       function (error) {
-        if(config.DEBUG_MODE) console.log(error);
+        console.error(error);
         recognizer.close();
         recognizer = undefined;
         reject("No fue posible obtener la transcripción.");
@@ -156,24 +148,35 @@ function getResponseNode(type, data, formats) {
     return getValueNode(data, formats);
   }
 
-  if (type === "rows" && data.length > 1) {
+  if (type === "rows") {
     return getTableNode(data, formats);
   }
+
+  return errorExecutionNode();
 }
 
 function getFormattedData(data, formats) {
-  formats.forEach((format, index) => {
+  formats.forEach((format) => {
     if (format.format !== "") {
       data.forEach((row) => {
         row[format.dataColumnName] = `${row[format.dataColumnName]} ${
           format.format
         }`;
-        console.log(row[format.dataColumnName]);
       });
     }
   });
 
   return data;
+}
+
+function getColumnAlias(dataColumnName, formats) {
+  var alias = dataColumnName;
+  formats.forEach((format) => {
+    if (format.dataColumnName.toLowerCase() === dataColumnName.toLowerCase()){
+      alias = format.alias;
+    } 
+  });
+  return alias;
 }
 
 function noDataAvailableNode() {
@@ -199,6 +202,8 @@ function getValueNode(data, formats) {
 }
 
 function getTableNode(data, formats) {
+  console.log(data)
+  console.log(formats)
   const formated_data = getFormattedData(data, formats);
   let div = document.createElement("div");
   // Create the table element
@@ -214,7 +219,7 @@ function getTableNode(data, formats) {
   // Loop through the column names and create header cells
   cols.forEach((item) => {
     let th = document.createElement("th");
-    th.innerText = item; // Set the column name as the text of the header cell
+    th.innerText = getColumnAlias(item, formats); // Set the column name as the text of the header cell
     tr.appendChild(th); // Append the header cell to the header row
   });
   thead.appendChild(tr); // Append the header row to the header
@@ -292,8 +297,6 @@ function getChartNode(type, data, formats) {
       });
   }
 
-  console.log(columnNames)
-
   if (type === "chart_multiserieline") {
     const series = [ ...new Set(data.map(row => row[columnNames[0]]))];
     labels = [ ...new Set(data.map(obj => obj[columnNames[1]]))];
@@ -315,8 +318,6 @@ function getChartNode(type, data, formats) {
     labels: labels,
     datasets: datasets,
   };
-
-  console.log(chart_data);
 
   const config = {
     type: "line",
