@@ -1,6 +1,6 @@
 ### Archivo de Configuracion ###
 
-El archivo config.js contiene los datos de configuracion para el API:
+El archivo config.js contiene los datos de configuración para consumir las APIs:
 
 const config = {
     SPEECH_KEY:"",
@@ -12,7 +12,7 @@ const config = {
 export default config;
 
 ### Dockerfile ###
-El archivo Dockerfile contiene los datos necesarios para crear un contenedor de nginx y copiar los archivo necesarios:
+El archivo Dockerfile contiene los datos necesarios para crear un contenedor de nginx y copiar los archivos necesarios:
 
 FROM nginx
 COPY . /usr/share/nginx/html
@@ -24,4 +24,4 @@ EXPOSE 80
 1. Crear la imagen: docker build -t nlq2sql-web-component .
 2. Etiquetar la imagen: docker tag nlq2sql-web-component devmindnet/nlq2sql-web-component:latest
 3. Iniciar sesion en DockerHub: docker login --username devmindnet
-3. Subir la imagen: docker push devmindnet/nlq2sql-web-component:latest
+4. Subir la imagen: docker push devmindnet/nlq2sql-web-component:latest
